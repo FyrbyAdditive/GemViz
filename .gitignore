@@ -1,0 +1,33 @@
+# Xcode
+.build/
+build/
+DerivedData/
+*.xcuserstate
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Swift Package Manager
+.swiftpm/
+Packages/
+Package.resolved
+
+# Provisioning profiles
+*.mobileprovision
+*.provisionprofile
+
+# Archives
+*.xcarchive
+
+# Playgrounds
+timeline.xctimeline
+playground.xcworkspace
+
+# Test output
+*.xcresult
