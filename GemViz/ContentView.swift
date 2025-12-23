@@ -128,6 +128,9 @@ struct SidebarView: View {
     @State private var surfaceOpacity: Double
     @State private var surfaceColor: Color
     @State private var surfaceReflectivity: Double
+    @State private var edgeEnabled: Bool
+    @State private var edgeColor: Color
+    @State private var edgeOpacity: Double
 
     init(gemFile: GemFile?, onSettingsChanged: @escaping () -> Void) {
         self.gemFile = gemFile
@@ -136,6 +139,9 @@ struct SidebarView: View {
         _surfaceOpacity = State(initialValue: settings.surfaceOpacity)
         _surfaceColor = State(initialValue: Color(settings.surfaceColor))
         _surfaceReflectivity = State(initialValue: settings.surfaceReflectivity)
+        _edgeEnabled = State(initialValue: settings.edgeEnabled)
+        _edgeColor = State(initialValue: Color(settings.edgeColor))
+        _edgeOpacity = State(initialValue: settings.edgeOpacity)
     }
 
     var body: some View {
@@ -200,6 +206,49 @@ struct SidebarView: View {
 
                     Divider()
 
+                    // Edge wireframe section
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Edges")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.secondary)
+
+                        Toggle("Show Edges", isOn: $edgeEnabled)
+                            .font(.callout)
+                            .onChange(of: edgeEnabled) { _, newValue in
+                                GemSettings.shared.edgeEnabled = newValue
+                                onSettingsChanged()
+                            }
+
+                        if edgeEnabled {
+                            VStack(alignment: .leading, spacing: 6) {
+                                HStack {
+                                    Text("Opacity")
+                                    Spacer()
+                                    Text("\(Int(edgeOpacity * 100))%")
+                                        .foregroundColor(.secondary)
+                                        .monospacedDigit()
+                                }
+                                .font(.callout)
+
+                                Slider(value: $edgeOpacity, in: 0.1...1.0)
+                                    .onChange(of: edgeOpacity) { _, newValue in
+                                        GemSettings.shared.edgeOpacity = newValue
+                                        onSettingsChanged()
+                                    }
+                            }
+
+                            ColorPicker("Color", selection: $edgeColor, supportsOpacity: false)
+                                .font(.callout)
+                                .onChange(of: edgeColor) { _, newValue in
+                                    GemSettings.shared.edgeColor = NSColor(newValue)
+                                    onSettingsChanged()
+                                }
+                        }
+                    }
+
+                    Divider()
+
                     // Info section (when file loaded)
                     if let gemFile = gemFile {
                         VStack(alignment: .leading, spacing: 12) {
@@ -247,6 +296,9 @@ struct SidebarView: View {
         surfaceOpacity = GemSettings.shared.surfaceOpacity
         surfaceColor = Color(GemSettings.shared.surfaceColor)
         surfaceReflectivity = GemSettings.shared.surfaceReflectivity
+        edgeEnabled = GemSettings.shared.edgeEnabled
+        edgeColor = Color(GemSettings.shared.edgeColor)
+        edgeOpacity = GemSettings.shared.edgeOpacity
         onSettingsChanged()
     }
 }

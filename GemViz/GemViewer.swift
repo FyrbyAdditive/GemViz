@@ -26,6 +26,7 @@ struct GemViewer: NSViewRepresentable {
         // Only update material properties, don't rebuild the scene
         // This preserves the camera position when settings change
         updateMaterials(in: scnView.scene)
+        updateEdgeVisibility(in: scnView.scene)
     }
 
     private func updateMaterials(in scene: SCNScene?) {
@@ -36,23 +37,42 @@ struct GemViewer: NSViewRepresentable {
         let reflectivity = settings.surfaceReflectivity
         let baseColor = settings.surfaceColor
 
-        // Find all geometry nodes and update their materials
-        scene.rootNode.enumerateChildNodes { node, _ in
-            guard let geometry = node.geometry,
-                  node.light == nil,  // Skip light nodes
-                  node.camera == nil  // Skip camera nodes
-            else { return }
-
+        // Update gem node materials
+        if let gemNode = scene.rootNode.childNode(withName: "gemNode", recursively: false),
+           let geometry = gemNode.geometry {
             for material in geometry.materials {
-                // Update color with opacity
                 let colorWithAlpha = baseColor.withAlphaComponent(CGFloat(opacity))
                 material.diffuse.contents = colorWithAlpha
-
-                // Update reflectivity
                 material.shininess = CGFloat(reflectivity * 0.9 + 0.1)
                 material.reflective.contents = NSColor(white: CGFloat(reflectivity * 0.5), alpha: 1.0)
                 material.fresnelExponent = CGFloat(1.0 + reflectivity * 4.0)
             }
+        }
+
+        // Update edge node materials
+        if let edgeNode = scene.rootNode.childNode(withName: "edgeNode", recursively: false) {
+            let edgeColor = settings.edgeColor
+            let edgeOpacity = settings.edgeOpacity
+
+            edgeNode.enumerateChildNodes { node, _ in
+                guard let geometry = node.geometry else { return }
+                for material in geometry.materials {
+                    let colorWithAlpha = edgeColor.withAlphaComponent(CGFloat(edgeOpacity))
+                    material.diffuse.contents = colorWithAlpha
+                    let emissionColor = edgeColor.withAlphaComponent(CGFloat(edgeOpacity * 0.3))
+                    material.emission.contents = emissionColor
+                }
+            }
+        }
+    }
+
+    private func updateEdgeVisibility(in scene: SCNScene?) {
+        guard let scene = scene else { return }
+
+        let settings = GemSettings.shared
+
+        if let edgeNode = scene.rootNode.childNode(withName: "edgeNode", recursively: false) {
+            edgeNode.isHidden = !settings.edgeEnabled
         }
     }
 }

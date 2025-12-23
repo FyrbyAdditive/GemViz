@@ -70,11 +70,65 @@ public class GemSettings {
         }
     }
 
+    // MARK: - Edge Wireframe
+
+    private static let edgeEnabledKey = "edgeEnabled"
+    private static let edgeColorKey = "edgeColor"
+    private static let edgeOpacityKey = "edgeOpacity"
+
+    private static let defaultEdgeEnabled: Bool = true
+    private static let defaultEdgeOpacity: Double = 0.6
+
+    public var edgeEnabled: Bool {
+        get {
+            if defaults.object(forKey: Self.edgeEnabledKey) == nil {
+                return Self.defaultEdgeEnabled
+            }
+            return defaults.bool(forKey: Self.edgeEnabledKey)
+        }
+        set {
+            defaults.set(newValue, forKey: Self.edgeEnabledKey)
+        }
+    }
+
+    public var edgeColor: NSColor {
+        get {
+            guard let data = defaults.data(forKey: Self.edgeColorKey),
+                  let color = try? NSKeyedUnarchiver.unarchivedObject(ofClass: NSColor.self, from: data)
+            else {
+                // Default to a subtle blue-grey that complements most gem colors
+                return NSColor(red: 0.4, green: 0.5, blue: 0.6, alpha: 1.0)
+            }
+            return color
+        }
+        set {
+            if let data = try? NSKeyedArchiver.archivedData(withRootObject: newValue, requiringSecureCoding: true) {
+                defaults.set(data, forKey: Self.edgeColorKey)
+            }
+        }
+    }
+
+    public var edgeOpacity: Double {
+        get {
+            let value = defaults.double(forKey: Self.edgeOpacityKey)
+            if value == 0 && defaults.object(forKey: Self.edgeOpacityKey) == nil {
+                return Self.defaultEdgeOpacity
+            }
+            return max(0.1, min(1.0, value))
+        }
+        set {
+            defaults.set(max(0.1, min(1.0, newValue)), forKey: Self.edgeOpacityKey)
+        }
+    }
+
     // MARK: - Reset
 
     public func resetToDefaults() {
         defaults.removeObject(forKey: Self.surfaceOpacityKey)
         defaults.removeObject(forKey: Self.surfaceColorKey)
         defaults.removeObject(forKey: Self.surfaceReflectivityKey)
+        defaults.removeObject(forKey: Self.edgeEnabledKey)
+        defaults.removeObject(forKey: Self.edgeColorKey)
+        defaults.removeObject(forKey: Self.edgeOpacityKey)
     }
 }
