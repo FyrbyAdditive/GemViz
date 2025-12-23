@@ -16,6 +16,7 @@
 			<key>LSItemContentTypes</key>
 			<array>
 				<string>com.fyrbyadditive.gemviz.gem</string>
+				<string>com.gemcad.gem</string>
 			</array>
 		</dict>
 	</array>
@@ -50,6 +51,26 @@
 			<string>GemCAD Design File</string>
 			<key>UTTypeIdentifier</key>
 			<string>com.fyrbyadditive.gemviz.gem</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>gem</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
+	<key>UTImportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>GemCAD Design File</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.gemcad.gem</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>

@@ -4,6 +4,10 @@ import SwiftUI
 struct GemVizApp: App {
     @State private var aboutWindow: NSWindow?
 
+    init() {
+        registerQuickLookExtension()
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()
@@ -53,4 +57,22 @@ struct GemVizApp: App {
 extension Notification.Name {
     static let openFile = Notification.Name("openFile")
     static let openFileURL = Notification.Name("openFileURL")
+}
+
+// MARK: - Quick Look Extension Registration
+
+private func registerQuickLookExtension() {
+    guard let bundlePath = Bundle.main.builtInPlugInsPath else { return }
+    let extensionPath = (bundlePath as NSString).appendingPathComponent("GemVizQuickLook.appex")
+
+    let task = Process()
+    task.executableURL = URL(fileURLWithPath: "/usr/bin/pluginkit")
+    task.arguments = ["-a", extensionPath]
+
+    do {
+        try task.run()
+        task.waitUntilExit()
+    } catch {
+        print("Failed to register Quick Look extension: \(error)")
+    }
 }
