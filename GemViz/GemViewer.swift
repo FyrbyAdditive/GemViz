@@ -23,12 +23,36 @@ struct GemViewer: NSViewRepresentable {
     }
 
     func updateNSView(_ scnView: SCNView, context: Context) {
-        // Rebuild scene when refresh is triggered (settings changed)
-        scnView.scene = GemSceneBuilder.build(from: gemFile)
+        // Only update material properties, don't rebuild the scene
+        // This preserves the camera position when settings change
+        updateMaterials(in: scnView.scene)
+    }
 
-        // Restore camera point of view
-        if let cameraNode = scnView.scene?.rootNode.childNodes.first(where: { $0.camera != nil }) {
-            scnView.pointOfView = cameraNode
+    private func updateMaterials(in scene: SCNScene?) {
+        guard let scene = scene else { return }
+
+        let settings = GemSettings.shared
+        let opacity = settings.surfaceOpacity
+        let reflectivity = settings.surfaceReflectivity
+        let baseColor = settings.surfaceColor
+
+        // Find all geometry nodes and update their materials
+        scene.rootNode.enumerateChildNodes { node, _ in
+            guard let geometry = node.geometry,
+                  node.light == nil,  // Skip light nodes
+                  node.camera == nil  // Skip camera nodes
+            else { return }
+
+            for material in geometry.materials {
+                // Update color with opacity
+                let colorWithAlpha = baseColor.withAlphaComponent(CGFloat(opacity))
+                material.diffuse.contents = colorWithAlpha
+
+                // Update reflectivity
+                material.shininess = CGFloat(reflectivity * 0.9 + 0.1)
+                material.reflective.contents = NSColor(white: CGFloat(reflectivity * 0.5), alpha: 1.0)
+                material.fresnelExponent = CGFloat(1.0 + reflectivity * 4.0)
+            }
         }
     }
 }

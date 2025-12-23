@@ -51,10 +51,30 @@ public class GemSettings {
         }
     }
 
+    // MARK: - Surface Reflectivity
+
+    private static let surfaceReflectivityKey = "surfaceReflectivity"
+    private static let defaultSurfaceReflectivity: Double = 0.7
+
+    public var surfaceReflectivity: Double {
+        get {
+            let value = defaults.double(forKey: Self.surfaceReflectivityKey)
+            // Return default if value is 0 (not set)
+            if value == 0 && defaults.object(forKey: Self.surfaceReflectivityKey) == nil {
+                return Self.defaultSurfaceReflectivity
+            }
+            return max(0.0, min(1.0, value))
+        }
+        set {
+            defaults.set(max(0.0, min(1.0, newValue)), forKey: Self.surfaceReflectivityKey)
+        }
+    }
+
     // MARK: - Reset
 
     public func resetToDefaults() {
         defaults.removeObject(forKey: Self.surfaceOpacityKey)
         defaults.removeObject(forKey: Self.surfaceColorKey)
+        defaults.removeObject(forKey: Self.surfaceReflectivityKey)
     }
 }

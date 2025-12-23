@@ -80,26 +80,37 @@ public class GemSceneBuilder {
     private static func createGemMaterial() -> SCNMaterial {
         let settings = GemSettings.shared
         let opacity = settings.surfaceOpacity
+        let reflectivity = settings.surfaceReflectivity
 
         let material = SCNMaterial()
-        material.lightingModel = .phong
 
-        // Surface color
-        material.diffuse.contents = settings.surfaceColor
+        // Use Blinn-Phong for better transparency support
+        material.lightingModel = .blinn
 
-        // Specular highlights for gem-like appearance
+        // Surface color with opacity baked in
+        let baseColor = settings.surfaceColor
+        let colorWithAlpha = baseColor.withAlphaComponent(CGFloat(opacity))
+        material.diffuse.contents = colorWithAlpha
+
+        // Specular highlights for reflective appearance
+        // Higher reflectivity = brighter, sharper highlights
         material.specular.contents = NSColor.white
-        material.shininess = 0.7
+        material.shininess = CGFloat(reflectivity * 0.9 + 0.1)  // 0.1 to 1.0 range
 
-        // Transparency: 0 = opaque, 1 = fully transparent
-        // opacity setting is 0.05-1.0 where higher = more opaque
-        material.transparency = CGFloat(1.0 - opacity)
+        // Reflective property for environment reflections
+        material.reflective.contents = NSColor(white: CGFloat(reflectivity * 0.5), alpha: 1.0)
+
+        // Fresnel effect - makes edges more visible/reflective
+        material.fresnelExponent = CGFloat(1.0 + reflectivity * 4.0)
 
         // Essential for transparent objects
         material.isDoubleSided = true
 
-        // Default transparency mode works best
-        material.transparencyMode = .default
+        // Use proper blending for transparency
+        material.blendMode = .alpha
+        material.transparencyMode = .dualLayer
+        material.writesToDepthBuffer = true
+        material.readsFromDepthBuffer = true
 
         return material
     }

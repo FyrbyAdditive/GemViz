@@ -232,7 +232,7 @@ public class GemParser {
         }
 
         // Read gear and angles
-        let gear = reader.readInt32() ?? 0
+        _ = reader.readInt32() // gear (unused)
         let refractiveIndex = reader.readDouble() ?? 1.54
         let gearAngle = reader.readDouble() ?? 0
 
@@ -274,71 +274,11 @@ public class GemParser {
     }
 
     private static func applySymmetry(facets: [GemFacet], metadata: GemMetadata) -> [GemFacet] {
-        // DEBUG: Temporarily disable all symmetry to check raw facets
+        // Symmetry is disabled - GemCAD files already contain fully symmetric geometry
         return facets
-
-        // If no symmetry operations needed, return original facets
-        guard metadata.symmetryFolds > 1 || metadata.symmetryMirror else { return facets }
-
-        // Check if facets already contain mirror symmetry by looking at centroid distribution
-        // If facets exist on both +X and -X sides, mirror is already baked in
-        let alreadyMirrored = facetsAlreadyMirrored(facets)
-
-        var result: [GemFacet] = []
-        let angleStep = (2.0 * .pi) / Float(metadata.symmetryFolds)
-
-        // Generate all rotations
-        for fold in 0..<metadata.symmetryFolds {
-            let angle = Float(fold) * angleStep
-            let cosA = cos(angle)
-            let sinA = sin(angle)
-
-            for facet in facets {
-                // Rotate around Y axis
-                let rotatedVertices = facet.vertices.map { v -> SIMD3<Float> in
-                    SIMD3<Float>(
-                        v.x * cosA + v.z * sinA,
-                        v.y,
-                        -v.x * sinA + v.z * cosA
-                    )
-                }
-
-                let rotatedNormal = SIMD3<Float>(
-                    facet.normal.x * cosA + facet.normal.z * sinA,
-                    facet.normal.y,
-                    -facet.normal.x * sinA + facet.normal.z * cosA
-                )
-
-                result.append(GemFacet(
-                    normal: rotatedNormal,
-                    label: facet.label,
-                    instruction: facet.instruction,
-                    vertices: rotatedVertices
-                ))
-            }
-        }
-
-        // Only apply mirror if metadata says so AND facets don't already contain mirrored geometry
-        if metadata.symmetryMirror && !alreadyMirrored {
-            let mirroredFacets = result.map { facet -> GemFacet in
-                let mirroredVertices = facet.vertices.map { v -> SIMD3<Float> in
-                    SIMD3<Float>(-v.x, v.y, v.z)
-                }
-                let mirroredNormal = SIMD3<Float>(-facet.normal.x, facet.normal.y, facet.normal.z)
-                return GemFacet(
-                    normal: mirroredNormal,
-                    label: facet.label,
-                    instruction: facet.instruction,
-                    vertices: mirroredVertices
-                )
-            }
-            result.append(contentsOf: mirroredFacets)
-        }
-
-        return result
     }
 
-    /// Check if facets already contain mirror-symmetric geometry across X=0
+    /// Check if facets already contain mirror-symmetric geometry across X=0 (currently unused)
     private static func facetsAlreadyMirrored(_ facets: [GemFacet]) -> Bool {
         // Calculate centroids for each facet
         var centroids: [(x: Float, y: Float, z: Float)] = []

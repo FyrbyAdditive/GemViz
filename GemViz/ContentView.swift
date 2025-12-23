@@ -122,6 +122,7 @@ struct SidebarView: View {
 
     @State private var surfaceOpacity: Double
     @State private var surfaceColor: Color
+    @State private var surfaceReflectivity: Double
 
     init(gemFile: GemFile?, onSettingsChanged: @escaping () -> Void) {
         self.gemFile = gemFile
@@ -129,6 +130,7 @@ struct SidebarView: View {
         let settings = GemSettings.shared
         _surfaceOpacity = State(initialValue: settings.surfaceOpacity)
         _surfaceColor = State(initialValue: Color(settings.surfaceColor))
+        _surfaceReflectivity = State(initialValue: settings.surfaceReflectivity)
     }
 
     var body: some View {
@@ -160,15 +162,32 @@ struct SidebarView: View {
                             .font(.callout)
 
                             Slider(value: $surfaceOpacity, in: 0.05...1.0)
-                                .onChange(of: surfaceOpacity) { newValue in
+                                .onChange(of: surfaceOpacity) { _, newValue in
                                     GemSettings.shared.surfaceOpacity = newValue
+                                    onSettingsChanged()
+                                }
+                        }
+
+                        VStack(alignment: .leading, spacing: 6) {
+                            HStack {
+                                Text("Reflectivity")
+                                Spacer()
+                                Text("\(Int(surfaceReflectivity * 100))%")
+                                    .foregroundColor(.secondary)
+                                    .monospacedDigit()
+                            }
+                            .font(.callout)
+
+                            Slider(value: $surfaceReflectivity, in: 0.0...1.0)
+                                .onChange(of: surfaceReflectivity) { _, newValue in
+                                    GemSettings.shared.surfaceReflectivity = newValue
                                     onSettingsChanged()
                                 }
                         }
 
                         ColorPicker("Color", selection: $surfaceColor, supportsOpacity: false)
                             .font(.callout)
-                            .onChange(of: surfaceColor) { newValue in
+                            .onChange(of: surfaceColor) { _, newValue in
                                 GemSettings.shared.surfaceColor = NSColor(newValue)
                                 onSettingsChanged()
                             }
@@ -222,6 +241,7 @@ struct SidebarView: View {
         GemSettings.shared.resetToDefaults()
         surfaceOpacity = GemSettings.shared.surfaceOpacity
         surfaceColor = Color(GemSettings.shared.surfaceColor)
+        surfaceReflectivity = GemSettings.shared.surfaceReflectivity
         onSettingsChanged()
     }
 }
