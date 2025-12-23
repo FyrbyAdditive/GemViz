@@ -2,6 +2,8 @@ import SwiftUI
 
 @main
 struct GemVizApp: App {
+    @State private var aboutWindow: NSWindow?
+
     var body: some Scene {
         WindowGroup {
             ContentView()
@@ -14,7 +16,32 @@ struct GemVizApp: App {
                 }
                 .keyboardShortcut("o")
             }
+            CommandGroup(replacing: .appInfo) {
+                Button("About GemViz") {
+                    showAboutWindow()
+                }
+            }
         }
+    }
+
+    private func showAboutWindow() {
+        if let existingWindow = aboutWindow, existingWindow.isVisible {
+            existingWindow.makeKeyAndOrderFront(nil)
+            return
+        }
+
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 320, height: 480),
+            styleMask: [.titled, .closable],
+            backing: .buffered,
+            defer: false
+        )
+        window.title = "About GemViz"
+        window.contentView = NSHostingView(rootView: AboutView())
+        window.center()
+        window.isReleasedWhenClosed = false
+        window.makeKeyAndOrderFront(nil)
+        aboutWindow = window
     }
 }
 
