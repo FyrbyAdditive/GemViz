@@ -7,6 +7,11 @@ struct GemVizApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .onOpenURL { url in
+                    if url.pathExtension.lowercased() == "gem" {
+                        NotificationCenter.default.post(name: .openFileURL, object: url)
+                    }
+                }
         }
         .windowStyle(.hiddenTitleBar)
         .commands {
@@ -47,4 +52,5 @@ struct GemVizApp: App {
 
 extension Notification.Name {
     static let openFile = Notification.Name("openFile")
+    static let openFileURL = Notification.Name("openFileURL")
 }

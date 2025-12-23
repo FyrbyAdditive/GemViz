@@ -64,6 +64,11 @@ struct ContentView: View {
         .onReceive(NotificationCenter.default.publisher(for: .openFile)) { _ in
             openFileDialog()
         }
+        .onReceive(NotificationCenter.default.publisher(for: .openFileURL)) { notification in
+            if let url = notification.object as? URL {
+                loadGemFile(from: url)
+            }
+        }
     }
 
     private func handleDrop(providers: [NSItemProvider]) -> Bool {
